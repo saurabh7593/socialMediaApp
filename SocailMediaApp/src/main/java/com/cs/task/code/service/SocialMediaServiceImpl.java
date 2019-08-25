@@ -6,8 +6,8 @@ package com.cs.task.code.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.cs.task.code.exception.UserNotFoundException;
-import com.cs.task.code.repository.SocailMediaRepo;
+import com.cs.task.code.repository.SocialMediaRepo;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
@@ -34,7 +34,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	private BaseResponse response;
 	
 	@Autowired
-	private SocailMediaRepo socailMediaRepoImpl;
+	private SocialMediaRepo socialMediaRepoImpl;
 
 
 	/* (non-Javadoc)
@@ -44,7 +44,8 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	public ResponseEntity<BaseResponse> createPost(CreatePostRequest request) {
 		logger.info("Inside create post method with request" +request.toString());
 		try {
-			socailMediaRepoImpl.findUserdetails(request.getUserId()).get(request.getUserId()).getPosts().put(request.getPostId(),request.getContent());
+			logger.info("values", socialMediaRepoImpl.findUserdetails(request.getUserId()));
+			socialMediaRepoImpl.findUserdetails(request.getUserId()).get(request.getUserId()).getPosts().put(request.getPostId(),request.getContent());
 			response.setResponseStatus(HttpStatus.OK);
 			response.setResponseMessage("Post Created Successfully");
 		} catch (UserNotFoundException e) {
@@ -67,16 +68,16 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 		logger.info("inside getNewsFeed method with userId"+userId);
 		NewsFeedResponse newsFeedResponse= new NewsFeedResponse();
 		try {
-			newsFeedResponse.setUserData(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts());
+			newsFeedResponse.setResponseMessage("Post Retrieved Successfully");
 			newsFeedResponse.setResponseStatus(HttpStatus.OK);
-			if(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().size()<=20) {			
-				newsFeedResponse.setResponseMessage("Post Retrieved Successfully");
+			if(socialMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().size()<=20) {	
+				newsFeedResponse.setUserData(socialMediaRepoImpl.findUserdetails(userId).get(userId).getPosts());
 			} else {
-				List<Map.Entry<String, String>> postList = new ArrayList<>(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().entrySet());
-				socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().clear();
+				List<Map.Entry<String, String>> postList = new ArrayList<>(socialMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().entrySet());
+				socialMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().clear();
 				for (Map.Entry<String, String> entry : postList.subList(0,20)) {
-					socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().put(entry.getKey(), entry.getValue());
-					newsFeedResponse.setUserData(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts());				
+					socialMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().put(entry.getKey(), entry.getValue());
+					newsFeedResponse.setUserData(socialMediaRepoImpl.findUserdetails(userId).get(userId).getPosts());				
 				}
 			}
 			logger.info("get news feed request completed successfully");
@@ -106,20 +107,20 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 			if(followerId==followeeId) {
 				response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
 				response.setResponseMessage("You can not follow yourself");
-			}else if(socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && socailMediaRepoImpl.findUserdetails(followeeId).get(followeeId) != null && socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList()!=null){
-				if( socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().contains(followeeId)) {
+			}else if(socialMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && socialMediaRepoImpl.findUserdetails(followeeId).get(followeeId) != null && socialMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList()!=null){
+				if( socialMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().contains(followeeId)) {
 					response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
 					response.setResponseMessage("You already follows the user"+followeeId);
-				} else if (socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && !socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().contains(followeeId)) {
-					socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().add(followeeId);
+				} else if (socialMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && !socialMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().contains(followeeId)) {
+					socialMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().add(followeeId);
 					response.setResponseStatus(HttpStatus.ACCEPTED);
 					response.setResponseMessage("Successfully Followed the user "+followeeId);
 				}
 				
-			}else if(socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && socailMediaRepoImpl.findUserdetails(followerId).get(followeeId) != null && socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList()==null){
+			}else if(socialMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && socialMediaRepoImpl.findUserdetails(followerId).get(followeeId) != null && socialMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList()==null){
 				List<String> followList=new ArrayList<>();
 				followList.add(followeeId);
-				socailMediaRepoImpl.findUserdetails(followerId).get(followerId).setFollowList(followList);
+				socialMediaRepoImpl.findUserdetails(followerId).get(followerId).setFollowList(followList);
 				response.setResponseStatus(HttpStatus.ACCEPTED);
 				response.setResponseMessage("Successfully Followed the user "+followeeId);			
 			}
@@ -148,15 +149,20 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 			if(followerId==followeeId) {
 				response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
 				response.setResponseMessage("You can not unfollow yourself");
-			}else if(socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null &&socailMediaRepoImpl.findUserdetails(followeeId).get(followeeId) != null && socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList()!=null) {
-				if(socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList().contains(followeeId)) {
+			}else if(socialMediaRepoImpl.findUserdetails(followerId).get(followerId) != null &&socialMediaRepoImpl.findUserdetails(followeeId).get(followeeId) != null && socialMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList()!=null) {
+				if(socialMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList().contains(followeeId)) {
+					List<String> followList=new ArrayList<>();
+					followList=socialMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList();
+					followList.remove(followeeId);
+										
+					socialMediaRepoImpl.findUserdetails(followeeId).get(followerId).setFollowList(followList);
 					response.setResponseStatus(HttpStatus.ACCEPTED);
 					response.setResponseMessage("You are unfollowing the user"+followeeId);
-				} else if(!socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList().contains(followeeId)) {
+				} else if(!socialMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList().contains(followeeId)) {
 					response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
 					response.setResponseMessage("You do not follow the user"+followeeId);
 				}		
-			} else if (socailMediaRepoImpl.findUserdetails(followeeId).get(followerId) != null && socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList()==null) {
+			} else if (socialMediaRepoImpl.findUserdetails(followeeId).get(followerId) != null && socialMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList()==null) {
 				response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
 				response.setResponseMessage("You do not follow the user"+followeeId);
 			}
@@ -183,10 +189,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	public ResponseEntity<FolloweeResponse> listOfFollowee(String userId) {
 		FolloweeResponse response = new FolloweeResponse();
 		try {
-			if(socailMediaRepoImpl.findUserdetails(userId).get(userId)!=null) {
+			if(socialMediaRepoImpl.findUserdetails(userId).get(userId)!=null) {
 				response.setResponseStatus(HttpStatus.OK);
 				response.setResponseMessage("retrieval of followee successfull");
-				response.setFolloweeData(socailMediaRepoImpl.findUserdetails(userId).get(userId).getFollowList());						
+				response.setFolloweeData(socialMediaRepoImpl.findUserdetails(userId).get(userId).getFollowList());						
 				}
 		} catch (UserNotFoundException e) {
 			logger.info("user not found" +e.getMessage());

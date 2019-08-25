@@ -19,10 +19,10 @@ import com.cs.task.code.exception.UserNotFoundException;
  *
  */
 @Component
-public class SocailMediaRepoImpl implements SocailMediaRepo {
+public class SocialMediaRepoImpl implements SocialMediaRepo {
 
 	/* (non-Javadoc)
-	 * @see com.cs.task.code.repository.SocailMediaRepo#createUser(int)
+	 * @see com.cs.task.code.repository.socialMediaRepo#createUser(int)
 	 * 
 	 */
 	
@@ -40,7 +40,7 @@ public class SocailMediaRepoImpl implements SocailMediaRepo {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.cs.task.code.repository.SocailMediaRepo#findUserdetails(int)
+	 * @see com.cs.task.code.repository.socialMediaRepo#findUserdetails(int)
 	 */
 	@Override
 	public Map<String, SocialUser> findUserdetails(String userId) throws UserNotFoundException {

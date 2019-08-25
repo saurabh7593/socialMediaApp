@@ -1,8 +1,8 @@
 package com.cs.task.code.controller;
 
 
-import java.awt.PageAttributes.MediaType;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -20,7 +20,7 @@ import com.cs.task.code.util.AppConstants;
  */
 
 @RequestMapping(value=AppConstants.Context_Path,produces=MediaType.APPLICATION_JSON_VALUE)
-public interface SocailMediaController {
+public interface SocialMediaController {
 	
 	/**
 	 * creates the post by taking below parameters
@@ -29,14 +29,14 @@ public interface SocailMediaController {
 	 * @param content
 	 * @return
 	 */
-	ResponseEntity<BaseResponse> createPost(CreatePostRequest request) throws AppCrashException;
+	ResponseEntity<BaseResponse> createPost(CreatePostRequest request) ;
 	
 	/**
 	 * returns the top 20 post created by particular userId
 	 * @param userId
 	 * @return
 	 */
-	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) throws AppCrashException;
+	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) ;
 	
 	/**
 	 * returns success response if a user id foollows another successfully

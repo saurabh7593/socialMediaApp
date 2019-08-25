@@ -12,7 +12,7 @@ import com.cs.task.code.exception.UserNotFoundException;
  * @author Saurabh Gupta
  *
  */
-public interface SocailMediaRepo {
+public interface SocialMediaRepo {
 	
 	Map<String, SocialUser> createUser(String userId);
 	

@@ -1,13 +1,13 @@
 package com.cs.task.code.controller;
 
-import java.awt.PageAttributes.MediaType;
-import java.util.logging.Logger;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +29,7 @@ import com.cs.task.code.service.SocialMediaService;
  *
  */
 @RestController
-public class SocialMediaControllerImpl implements SocailMediaController {
+public class SocialMediaControllerImpl implements SocialMediaController {
 	
 	private static final Logger logger=LoggerFactory.getLogger(SocialMediaControllerImpl.class);
 	
@@ -37,7 +37,7 @@ public class SocialMediaControllerImpl implements SocailMediaController {
 	SocialMediaService socialMediaServiceImpl;
 
 	@Override
-	@RequestMapping(value="/create/createPost",method= {RequestMethod.POST},produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value="/create/createPost",method= {RequestMethod.POST},consumes=MediaType.APPLICATION_JSON_VALUE,produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<BaseResponse> createPost(@RequestBody(required=true) @Valid CreatePostRequest request) {
 		logger.info("Inside createPost Method");
 		return socialMediaServiceImpl.createPost(request);
@@ -65,7 +65,7 @@ public class SocialMediaControllerImpl implements SocailMediaController {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.cs.task.code.controller.SocailMediaController#listOfFollowers(java.lang.String)
+	 * @see com.cs.task.code.controller.socialMediaController#listOfFollowers(java.lang.String)
 	 */
 	@Override
 	@RequestMapping(value="/listOfFollowee/{userId}",method= {RequestMethod.GET})
