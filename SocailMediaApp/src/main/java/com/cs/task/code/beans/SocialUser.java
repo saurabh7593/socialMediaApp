@@ -10,6 +10,18 @@ import java.util.Map;
 public class SocialUser {
 	
 	/**
+	 * @param userId
+	 * @param followList
+	 * @param posts
+	 */
+	public SocialUser(String userId, List<String> followList, Map<String, String> posts) {
+		super();
+		this.userId = userId;
+		this.followList = followList;
+		this.posts = posts;
+	}
+
+	/**
 	 * User Id 
 	 * Also serves as follower Id
 	 */

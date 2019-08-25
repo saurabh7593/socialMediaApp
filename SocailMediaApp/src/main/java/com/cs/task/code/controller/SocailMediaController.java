@@ -1,10 +1,12 @@
 package com.cs.task.code.controller;
 
 
-import org.springframework.http.MediaType;
+import java.awt.PageAttributes.MediaType;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.cs.task.code.exception.AppCrashException;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
@@ -27,14 +29,14 @@ public interface SocailMediaController {
 	 * @param content
 	 * @return
 	 */
-	ResponseEntity<BaseResponse> createPost(CreatePostRequest request);
+	ResponseEntity<BaseResponse> createPost(CreatePostRequest request) throws AppCrashException;
 	
 	/**
 	 * returns the top 20 post created by particular userId
 	 * @param userId
 	 * @return
 	 */
-	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId);
+	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) throws AppCrashException;
 	
 	/**
 	 * returns success response if a user id foollows another successfully

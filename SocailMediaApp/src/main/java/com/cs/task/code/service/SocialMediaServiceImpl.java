@@ -4,16 +4,18 @@
 package com.cs.task.code.service;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.cs.task.code.beans.SocialUser;
+import com.cs.task.code.exception.UserNotFoundException;
+import com.cs.task.code.repository.SocailMediaRepo;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
@@ -26,12 +28,13 @@ import com.cs.task.code.response.NewsFeedResponse;
 
 @Component
 public class SocialMediaServiceImpl implements SocialMediaService {
-	
-	@Autowired
-	private Map<String,SocialUser> postMap;
-	
+	private static final Logger logger=LoggerFactory.getLogger(SocialMediaServiceImpl.class);
+		
 	@Autowired
 	private BaseResponse response;
+	
+	@Autowired
+	private SocailMediaRepo socailMediaRepoImpl;
 
 
 	/* (non-Javadoc)
@@ -39,21 +42,21 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	 */
 	@Override
 	public ResponseEntity<BaseResponse> createPost(CreatePostRequest request) {
-		if(postMap.get(request.getUserId()) != null) {
-			postMap.get(request.getUserId()).getPosts().put(request.getPostId(),request.getContent());
-		} else {
-			SocialUser user=new SocialUser();
-				user.setUserId(request.getUserId());
-				Map<String,String>post=new LinkedHashMap<>();
-				post.put(request.getPostId(), request.getContent());
-				user.setPosts(post);
-				postMap.put(request.getUserId(),user);
-					
+		logger.info("Inside create post method with request" +request.toString());
+		try {
+			socailMediaRepoImpl.findUserdetails(request.getUserId()).get(request.getUserId()).getPosts().put(request.getPostId(),request.getContent());
+			response.setResponseStatus(HttpStatus.OK);
+			response.setResponseMessage("Post Created Successfully");
+		} catch (UserNotFoundException e) {
+			response.setResponseStatus(HttpStatus.OK);
+			response.setResponseMessage(e.getMessage());
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			response.setResponseStatus(HttpStatus.OK);
+			response.setResponseMessage("Something went wrong"+e.getMessage());
 		}
-		response.setResponseStatus(HttpStatus.OK);
-		response.setResponseMessage("Post Created Successfully");
 		
-										
 		return ResponseEntity.status(HttpStatus.OK).body(response);	}
 
 	/* (non-Javadoc)
@@ -61,29 +64,36 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	 */
 	@Override
 	public ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) {
+		logger.info("inside getNewsFeed method with userId"+userId);
 		NewsFeedResponse newsFeedResponse= new NewsFeedResponse();
-		if(postMap.get(userId)!=null) {
+		try {
+			newsFeedResponse.setUserData(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts());
 			newsFeedResponse.setResponseStatus(HttpStatus.OK);
-			newsFeedResponse.setResponseMessage("Post Retrieved Successfully");
-			if(postMap.get(userId).getPosts().size()<=20) {
-				newsFeedResponse.setUserData(postMap.get(userId).getPosts());
+			if(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().size()<=20) {			
+				newsFeedResponse.setResponseMessage("Post Retrieved Successfully");
 			} else {
-				List<Map.Entry<String, String>> postList = new ArrayList<>(postMap.get(userId).getPosts().entrySet());
-				postMap.get(userId).getPosts().clear();
+				List<Map.Entry<String, String>> postList = new ArrayList<>(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().entrySet());
+				socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().clear();
 				for (Map.Entry<String, String> entry : postList.subList(0,20)) {
-				    postMap.get(userId).getPosts().put(entry.getKey(), entry.getValue());
+					socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts().put(entry.getKey(), entry.getValue());
+					newsFeedResponse.setUserData(socailMediaRepoImpl.findUserdetails(userId).get(userId).getPosts());				
 				}
-				newsFeedResponse.setResponseStatus(HttpStatus.OK);
-				newsFeedResponse.setResponseMessage("Top 20 Post Retrieved Successfully");
-				newsFeedResponse.setUserData(postMap.get(userId).getPosts());				
 			}
-			return  ResponseEntity.status(HttpStatus.OK).body(newsFeedResponse);
-		} else {
+			logger.info("get news feed request completed successfully");
+		} catch (UserNotFoundException e) {
+			logger.info(e.getMessage());
 			newsFeedResponse.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-			newsFeedResponse.setResponseMessage("User Not Found");
+			newsFeedResponse.setResponseMessage(e.getMessage());
 			newsFeedResponse.setUserData(null);
-			return  ResponseEntity.status(HttpStatus.OK).body(newsFeedResponse);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			newsFeedResponse.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+			newsFeedResponse.setResponseMessage("Something went wrong"+e.getMessage());
+			newsFeedResponse.setUserData(null);
 		}
+		
+		return  ResponseEntity.status(HttpStatus.OK).body(newsFeedResponse);
 	}
 
 	/* (non-Javadoc)
@@ -91,29 +101,40 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	 */
 	@Override
 	public ResponseEntity<BaseResponse> follow(String followerId, String followeeId) {
-		if(followerId==followeeId) {
-			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-			response.setResponseMessage("You can not follow yourself");
-		}else if(postMap.get(followerId) != null && postMap.get(followeeId) != null && postMap.get(followerId).getFollowList()!=null){
-			if( postMap.get(followerId).getFollowList().contains(followeeId)) {
+		logger.info("Inside the follow method with follower id" +followerId+ " to follow"+followeeId);
+		try {
+			if(followerId==followeeId) {
 				response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-				response.setResponseMessage("You already follows the user"+followeeId);
-			} else if (postMap.get(followerId) != null && !postMap.get(followerId).getFollowList().contains(followeeId)) {
-				postMap.get(followerId).getFollowList().add(followeeId);
+				response.setResponseMessage("You can not follow yourself");
+			}else if(socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && socailMediaRepoImpl.findUserdetails(followeeId).get(followeeId) != null && socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList()!=null){
+				if( socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().contains(followeeId)) {
+					response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+					response.setResponseMessage("You already follows the user"+followeeId);
+				} else if (socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && !socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().contains(followeeId)) {
+					socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList().add(followeeId);
+					response.setResponseStatus(HttpStatus.ACCEPTED);
+					response.setResponseMessage("Successfully Followed the user "+followeeId);
+				}
+				
+			}else if(socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null && socailMediaRepoImpl.findUserdetails(followerId).get(followeeId) != null && socailMediaRepoImpl.findUserdetails(followerId).get(followerId).getFollowList()==null){
+				List<String> followList=new ArrayList<>();
+				followList.add(followeeId);
+				socailMediaRepoImpl.findUserdetails(followerId).get(followerId).setFollowList(followList);
 				response.setResponseStatus(HttpStatus.ACCEPTED);
-				response.setResponseMessage("Successfully Followed the user "+followeeId);
+				response.setResponseMessage("Successfully Followed the user "+followeeId);			
 			}
-			
-		}else if(postMap.get(followerId) != null && postMap.get(followeeId) != null && postMap.get(followerId).getFollowList()==null){
-			List<String> followList=new ArrayList<>();
-			followList.add(followeeId);
-			postMap.get(followerId).setFollowList(followList);
-			response.setResponseStatus(HttpStatus.ACCEPTED);
-			response.setResponseMessage("Successfully Followed the user "+followeeId);			
-		}else if(postMap.get(followeeId) == null ) {
+			logger.info("follow request completed successfully");
+		} catch (UserNotFoundException e) {
 			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-			response.setResponseMessage("Followee "+followeeId+" not found");
+			response.setResponseMessage(e.getMessage());
+		} catch(Exception e) {
+			logger.error("Something went wrong" +e.getMessage());
+			e.printStackTrace();
+			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+			response.setResponseMessage("Someting went wrong"+e.getMessage());
 		}
+		
+		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -122,24 +143,36 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	 */
 	@Override
 	public ResponseEntity<BaseResponse> unFollow(String followerId, String followeeId) {
-		if(followerId==followeeId) {
-			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-			response.setResponseMessage("You can not unfollow yourself");
-		}else if(postMap.get(followerId) != null &&postMap.get(followeeId) != null && postMap.get(followerId).getFollowList()!=null) {
-			if(postMap.get(followerId).getFollowList().contains(followeeId)) {
-				response.setResponseStatus(HttpStatus.ACCEPTED);
-				response.setResponseMessage("You are unfollowing the user"+followeeId);
-			} else if(!postMap.get(followerId).getFollowList().contains(followeeId)) {
+		logger.info("Inside the Unfollow method with follower id" +followerId+ " to follow"+followeeId);
+		try {
+			if(followerId==followeeId) {
+				response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+				response.setResponseMessage("You can not unfollow yourself");
+			}else if(socailMediaRepoImpl.findUserdetails(followerId).get(followerId) != null &&socailMediaRepoImpl.findUserdetails(followeeId).get(followeeId) != null && socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList()!=null) {
+				if(socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList().contains(followeeId)) {
+					response.setResponseStatus(HttpStatus.ACCEPTED);
+					response.setResponseMessage("You are unfollowing the user"+followeeId);
+				} else if(!socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList().contains(followeeId)) {
+					response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+					response.setResponseMessage("You do not follow the user"+followeeId);
+				}		
+			} else if (socailMediaRepoImpl.findUserdetails(followeeId).get(followerId) != null && socailMediaRepoImpl.findUserdetails(followeeId).get(followerId).getFollowList()==null) {
 				response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
 				response.setResponseMessage("You do not follow the user"+followeeId);
-			}		
-		} else if (postMap.get(followerId) != null && postMap.get(followerId).getFollowList()==null) {
+			}
+			logger.info("Unfollow request completed successfully");
+
+		} catch (UserNotFoundException e) {
+			logger.info("user not found" +e.getMessage());
 			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-			response.setResponseMessage("You do not follow the user"+followeeId);
-		} if(postMap.get(followeeId) == null ) {
+			response.setResponseMessage(e.getMessage());
+		} catch (Exception e) {
+			logger.error("Something went wrong" +e.getMessage());
+			e.printStackTrace();
 			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
-			response.setResponseMessage("Followee "+followeeId+" not found");
+			response.setResponseMessage("Someting went wrong"+e.getMessage());		
 		}
+		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -149,11 +182,23 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	@Override
 	public ResponseEntity<FolloweeResponse> listOfFollowee(String userId) {
 		FolloweeResponse response = new FolloweeResponse();
-		if(postMap.get(userId)!=null) {
-			response.setResponseStatus(HttpStatus.OK);
-			response.setResponseMessage("retrieval of followee successfull");
-			response.setFolloweeData(postMap.get(userId).getFollowList());						
-			}
+		try {
+			if(socailMediaRepoImpl.findUserdetails(userId).get(userId)!=null) {
+				response.setResponseStatus(HttpStatus.OK);
+				response.setResponseMessage("retrieval of followee successfull");
+				response.setFolloweeData(socailMediaRepoImpl.findUserdetails(userId).get(userId).getFollowList());						
+				}
+		} catch (UserNotFoundException e) {
+			logger.info("user not found" +e.getMessage());
+			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+			response.setResponseMessage(e.getMessage());
+		} catch (Exception e) {
+			logger.error("Something went wrong" +e.getMessage());
+			e.printStackTrace();
+			response.setResponseStatus(HttpStatus.EXPECTATION_FAILED);
+			response.setResponseMessage("Someting went wrong"+e.getMessage());
+		}
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);		
 	}
 

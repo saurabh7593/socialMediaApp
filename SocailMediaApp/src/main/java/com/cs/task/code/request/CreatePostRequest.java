@@ -1,13 +1,6 @@
 package com.cs.task.code.request;
 
-import java.util.Map;
-
 import javax.validation.constraints.NotNull;
-
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.lang.NonNull;
-
-import com.cs.task.code.beans.SocialUser;
 
 /**
  * @author Saurabh Gupta
@@ -56,6 +49,14 @@ public class CreatePostRequest {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "CreatePostRequest [userId=" + userId + ", postId=" + postId + ", content=" + content + "]";
 	}
 
 }
