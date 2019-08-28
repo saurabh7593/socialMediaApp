@@ -1,11 +1,13 @@
 package com.cs.task.code.service;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 
+import com.cs.task.code.exception.UserDetailsNotFoundException;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
-import com.cs.task.code.response.FolloweeResponse;
-import com.cs.task.code.response.NewsFeedResponse;
 
 /**
  * @author Saurabh Gupta
@@ -19,6 +21,7 @@ public interface SocialMediaService {
 	 * @param postId
 	 * @param content
 	 * @return
+	 * @throws UserDetailsNotFoundException 
 	 */
 	ResponseEntity<BaseResponse> createPost(CreatePostRequest request);
 	
@@ -26,8 +29,9 @@ public interface SocialMediaService {
 	 * returns the top 20 post created by particular userId
 	 * @param userId
 	 * @return
+	 * @throws UserDetailsNotFoundException 
 	 */
-	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId);
+	ResponseEntity<BaseResponse> getNewsFeed(String userId);
 	
 	/**
 	 * returns success response if a user id foollows another successfully
@@ -42,14 +46,8 @@ public interface SocialMediaService {
 	 * @param followerId
 	 * @param followeeId
 	 * @return
+	 * @throws UserDetailsNotFoundException 
 	 */
 	ResponseEntity<BaseResponse> unFollow(String followerId,String followeeId);
-
-	/**
-	 * returns List of followee of a particular User
-	 * @param userId
-	 * @return
-	 */
-	ResponseEntity<FolloweeResponse> listOfFollowee(String userId);
 
 }

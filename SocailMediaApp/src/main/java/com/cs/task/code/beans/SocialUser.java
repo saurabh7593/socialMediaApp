@@ -82,23 +82,16 @@ public class SocialUser {
 		this.followList = followList;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((followList == null) ? 0 : followList.hashCode());
-		result = prime * result + ((posts == null) ? 0 : posts.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -112,11 +105,6 @@ public class SocialUser {
 			if (other.followList != null)
 				return false;
 		} else if (!followList.equals(other.followList))
-			return false;
-		if (posts == null) {
-			if (other.posts != null)
-				return false;
-		} else if (!posts.equals(other.posts))
 			return false;
 		if (userId == null) {
 			if (other.userId != null)

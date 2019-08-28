@@ -7,7 +7,7 @@ package com.cs.task.code.exception;
  * @author ethan
  *
  */
-public class UserNotFoundException extends Exception {
+public class UserDetailsNotFoundException extends Exception {
 
 	/**
 	 * 
@@ -17,7 +17,7 @@ public class UserNotFoundException extends Exception {
 	/**
 	 * @param message
 	 */
-	public UserNotFoundException(String message) {
+	public UserDetailsNotFoundException(String message) {
 		super(message);
 	}
 

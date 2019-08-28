@@ -8,8 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,7 +25,6 @@ import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
 import com.cs.task.code.response.NewsFeedResponse;
-import com.cs.task.code.service.SocialMediaService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class SocialMediaControllerTest  {
 		
 	@MockBean
-	SocialMediaService socialMediaServiceImpl;
+	SocialMediaControllerImpl socialMediaServiceImpl;
 
 	
 	@Autowired
@@ -56,9 +53,7 @@ public class SocialMediaControllerTest  {
 	FolloweeResponse followeeResponse;
 	
 	String requestJson;
-	
-	private static final Logger logger=LoggerFactory.getLogger(SocialMediaControllerTest.class);
-	
+		
 	@Before
 	public void setUp() throws Exception{
 		MockitoAnnotations.initMocks(this);
@@ -132,22 +127,6 @@ public class SocialMediaControllerTest  {
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
 		
 	}
-	
-	@Test
-	public void listOfFolloweeTest() throws Exception {
-		when(socialMediaServiceImpl.listOfFollowee(Mockito.anyString())).thenReturn(ResponseEntity.status(HttpStatus.OK).body(followeeResponse));
-		String URI="/socialMedia/listOfFollowee/userId";
-		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get(URI)
-				.contentType(MediaType.APPLICATION_JSON_VALUE);
-		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		
-		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		
-	}
-
-	
 	
 	private String mapToJson(Object object) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();

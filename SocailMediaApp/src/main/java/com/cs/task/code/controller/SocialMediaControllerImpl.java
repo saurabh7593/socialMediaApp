@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cs.task.code.exception.UserDetailsNotFoundException;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
@@ -35,6 +37,8 @@ public class SocialMediaControllerImpl implements SocialMediaController {
 	
 	@Autowired
 	SocialMediaService socialMediaServiceImpl;
+	
+	private BaseResponse response=new BaseResponse();
 
 	@Override
 	@RequestMapping(value="/create/createPost",method= {RequestMethod.POST},consumes=MediaType.APPLICATION_JSON_VALUE,produces=MediaType.APPLICATION_JSON_VALUE)
@@ -45,9 +49,9 @@ public class SocialMediaControllerImpl implements SocialMediaController {
 
 	@Override
 	@RequestMapping(value="/get/getNewsFeed/{userId}",method= {RequestMethod.GET},produces=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<NewsFeedResponse> getNewsFeed(@PathVariable(name="userId", required=true) @NotNull String userId) {
-		logger.info("Inside getNewsFeed Method");
-		return socialMediaServiceImpl.getNewsFeed(userId);
+	public ResponseEntity<BaseResponse> getNewsFeed(@PathVariable(name="userId", required=true) @NotNull String userId) {
+		logger.info("inside getNewsFeed method with userId {}",userId);		
+		return  socialMediaServiceImpl.getNewsFeed(userId);
 	}
 
 	@Override
@@ -60,18 +64,7 @@ public class SocialMediaControllerImpl implements SocialMediaController {
 	@Override
 	@RequestMapping(value="/unFollow",method= {RequestMethod.GET},produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<BaseResponse> unFollow(@RequestParam (name="followerId",required=true) String followerId,@RequestParam (name="followeeId",required=true) String followeeId) {
-		logger.info("Inside Unfollow Method");
+		logger.info("Inside Unfollow Method");		
 		return socialMediaServiceImpl.unFollow(followerId, followeeId);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.cs.task.code.controller.socialMediaController#listOfFollowers(java.lang.String)
-	 */
-	@Override
-	@RequestMapping(value="/listOfFollowee/{userId}",method= {RequestMethod.GET})
-	public ResponseEntity<FolloweeResponse> listOfFollowers(@PathVariable(name="userId",required=true)String userId) {
-		logger.info("Inside listOfFollowers Method");
-		return socialMediaServiceImpl.listOfFollowee(userId);
-	}
-
 }

@@ -6,7 +6,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.cs.task.code.exception.AppCrashException;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
@@ -36,7 +35,7 @@ public interface SocialMediaController {
 	 * @param userId
 	 * @return
 	 */
-	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) ;
+	ResponseEntity<BaseResponse> getNewsFeed(String userId) ;
 	
 	/**
 	 * returns success response if a user id foollows another successfully
@@ -53,14 +52,5 @@ public interface SocialMediaController {
 	 * @return
 	 */
 	ResponseEntity<BaseResponse> unFollow(String followerId,String followeeId);
-	
-	/**
-	 ** returns List of followee user follows
-	 * @param followerId
-	 * @param followeeId
-	 * @return
-	 */
-	ResponseEntity<FolloweeResponse> listOfFollowers(String userId);
-
 
 }
