@@ -12,6 +12,3 @@
   
   #4 URI : http://localhost:8080/socialMedia/unFollow?followerId=saurr100&followeeId=cs100
   
-  #5 URI : http://localhost:8080/socialMedia/listOfFollowee/saur102
-
-  
