@@ -66,8 +66,6 @@ public class SocialMediaServiceTest  {
 		request.setPostId("ps123");
 		request.setContent("Hi Tis is conent");
 		
-		
-		
 		postsMap =new HashMap<>();
 		postsMap.put("ps123", "Some content");
 		List <String> followeeList =new ArrayList<>();
@@ -75,7 +73,7 @@ public class SocialMediaServiceTest  {
 		
 		userDetailsMap.put("cs101", new SocialUser("cs101", followeeList, postsMap));
 		userDetailsMap.put("cs102", new SocialUser("cs102", followeeList, postsMap));
-
+		userDetailsMap.put("auto", new SocialUser("cs101", followeeList, postsMap));
 		
 		socialMediaRepoImpl.setuserDetailsMap(userDetailsMap);
 		
@@ -94,7 +92,7 @@ public class SocialMediaServiceTest  {
 		request1.setPostId("req1");
 		request1.setContent("Hi This is new post");
 		socialMediaServiceImpl.createPost(request1);
-		assertEquals(socialMediaRepoImpl.getPostDetailsOfUser(request1.getUserId()).get("req1cs101"),"Hi This is new post");
+		assertTrue(socialMediaRepoImpl.getPostDetailsOfUser("cs101").containsValue("Hi This is new post"));
 	}
 	
 	/* (non-Javadoc)
@@ -126,6 +124,23 @@ public class SocialMediaServiceTest  {
 		assertTrue(socialMediaRepoImpl.getFolloweeDetailsOfUser("cs101").size()==1);
 		socialMediaServiceImpl.follow("cs101", "cs102");
 		assertTrue(socialMediaRepoImpl.getFolloweeDetailsOfUser("cs101").size()==2);	
+	}
+	
+	@Test
+	public void checkTop20UserFeedTest() throws UserDetailsNotFoundException {
+		for (int i = 0; i < 20; i++) {
+			CreatePostRequest req = new CreatePostRequest();
+			req.setUserId("auto");
+			req.setPostId("autoPost".concat(String.valueOf(i)));
+			req.setContent("Auto content");
+			socialMediaServiceImpl.createPost(req);			
+		}
+		assertTrue(socialMediaRepoImpl.getPostDetailsOfUser("auto").size()==21);
+		socialMediaServiceImpl.follow("auto", "cs101");
+		socialMediaServiceImpl.follow("auto", "cs102");
+		assertTrue(socialMediaRepoImpl.getPostDetailsOfUser("auto").containsValue("Some content"));
+
+		
 	}
  
 	@Test(expected=UserDetailsNotFoundException.class)

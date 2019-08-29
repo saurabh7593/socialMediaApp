@@ -3,6 +3,7 @@
  */
 package com.cs.task.code.service;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	private SocialMediaRepo socialMediaRepoImpl;
 	
 	private BaseResponse response=new BaseResponse();
+	
+	Instant currTimeStamp;
 
 	/* (non-Javadoc)
 	 * @see com.cs.task.code.service.SocialMediaService#createPost(com.cs.task.code.request.CreatePostRequest)
@@ -42,8 +45,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	public ResponseEntity<BaseResponse> createPost(CreatePostRequest request) {
 		logger.info("Inside create post method with request {}",request.toString());		
 		try {
+			currTimeStamp=Instant.now();
 			socialMediaRepoImpl.createPost(request.getUserId())
-			.put(request.getPostId().concat(request.getUserId()),request.getContent());
+			.put(String.valueOf(currTimeStamp.toEpochMilli())
+					.concat(request.getPostId()),request.getContent());
 			setSuccessResponse(response, "Post created succesfully");
 			} 
 		catch (UserDetailsNotFoundException e) {
@@ -67,6 +72,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 				 	newsFeedResponse.setUserData(socialMediaRepoImpl.getPostDetailsOfUser(userId).entrySet()
 			                .stream()
 			                .limit(20)
+			                .sorted(Map.Entry.comparingByKey())
 			                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
 					setSuccessResponse(newsFeedResponse, "Top 20 Post retrieved successfully");
 
