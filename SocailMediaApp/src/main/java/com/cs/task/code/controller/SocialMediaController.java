@@ -35,7 +35,7 @@ public interface SocialMediaController {
 	 * @param userId
 	 * @return
 	 */
-	ResponseEntity<BaseResponse> getNewsFeed(String userId) ;
+	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) ;
 	
 	/**
 	 * returns success response if a user id foollows another successfully

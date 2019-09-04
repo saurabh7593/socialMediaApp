@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -61,19 +62,14 @@ public class SocialMediaServiceTest  {
 	@Before
 	public void setUp() throws Exception{
 		MockitoAnnotations.initMocks(this);	
-		request=new CreatePostRequest();
-		request.setUserId("cs101");
-		request.setPostId("ps123");
-		request.setContent("Hi Tis is conent");
 		
 		postsMap =new HashMap<>();
-		postsMap.put("ps123", "Some content");
+		postsMap.put(String.valueOf(Instant.now().toEpochMilli()).concat("ps123"), "Some content");
 		List <String> followeeList =new ArrayList<>();
 		followeeList.add("cs101");
 		
 		userDetailsMap.put("cs101", new SocialUser("cs101", followeeList, postsMap));
 		userDetailsMap.put("cs102", new SocialUser("cs102", followeeList, postsMap));
-		userDetailsMap.put("auto", new SocialUser("cs101", followeeList, postsMap));
 		
 		socialMediaRepoImpl.setuserDetailsMap(userDetailsMap);
 		
@@ -111,7 +107,7 @@ public class SocialMediaServiceTest  {
 		
 	@Test
 	public void getNewsFeedTest() throws UserDetailsNotFoundException {
-		assertEquals(socialMediaRepoImpl.getPostDetailsOfUser(request.getUserId()).get("ps123"), "Some content");
+		assertTrue(socialMediaServiceImpl.getNewsFeed("cs101").getBody().getUserData().containsValue("Some content"));
 	}
 	
 	@Test(expected=UserDetailsNotFoundException.class)
@@ -128,24 +124,26 @@ public class SocialMediaServiceTest  {
 	
 	@Test
 	public void checkTop20UserFeedTest() throws UserDetailsNotFoundException {
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 50; i++) {
 			CreatePostRequest req = new CreatePostRequest();
 			req.setUserId("auto");
 			req.setPostId("autoPost".concat(String.valueOf(i)));
 			req.setContent("Auto content");
 			socialMediaServiceImpl.createPost(req);			
 		}
-		assertTrue(socialMediaRepoImpl.getPostDetailsOfUser("auto").size()==21);
 		socialMediaServiceImpl.follow("auto", "cs101");
 		socialMediaServiceImpl.follow("auto", "cs102");
-		assertTrue(socialMediaRepoImpl.getPostDetailsOfUser("auto").containsValue("Some content"));
+
+		assertTrue(socialMediaServiceImpl.getNewsFeed("auto").getBody().getNumbrOfPosts()==20); //indicated we are getting top 20 posts from user
+
+		assertFalse(socialMediaServiceImpl.getNewsFeed("auto").getBody().getUserData().containsValue("Some content"));
 
 		
 	}
  
 	@Test(expected=UserDetailsNotFoundException.class)
     public void checkFollowCriteria () throws UserDetailsNotFoundException {
-    	assertTrue(socialMediaServiceImpl.checkFollowCriteria("cs101", "cs101"));
+    	socialMediaServiceImpl.checkFollowCriteria("cs101", "cs101");
     }
 	
 	@Test

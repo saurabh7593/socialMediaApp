@@ -16,6 +16,12 @@ public class NewsFeedResponse extends BaseResponse {
 	 */
 	private Map<String,String> userData;
 	
+	/**
+	 * Indicates the number of post by a user
+	 */
+	
+	private int numbrOfPosts;
+	
 
 	/**
 	 * @return the userData
@@ -29,5 +35,13 @@ public class NewsFeedResponse extends BaseResponse {
 	 */
 	public void setUserData(Map<String, String> map) {
 		this.userData = map;
+	}
+
+	public int getNumbrOfPosts() {
+		return numbrOfPosts;
+	}
+
+	public void setNumbrOfPosts(int numbrOfPosts) {
+		this.numbrOfPosts = numbrOfPosts;
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import com.cs.task.code.exception.UserDetailsNotFoundException;
 import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
+import com.cs.task.code.response.NewsFeedResponse;
 
 /**
  * @author Saurabh Gupta
@@ -31,7 +32,7 @@ public interface SocialMediaService {
 	 * @return
 	 * @throws UserDetailsNotFoundException 
 	 */
-	ResponseEntity<BaseResponse> getNewsFeed(String userId);
+	ResponseEntity<NewsFeedResponse> getNewsFeed(String userId);
 	
 	/**
 	 * returns success response if a user id foollows another successfully

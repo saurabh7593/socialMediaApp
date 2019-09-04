@@ -4,6 +4,7 @@
 package com.cs.task.code.service;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,15 +66,16 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 	 * @see com.cs.task.code.service.SocialMediaService#getNewsFeed(int)
 	 */
 	@Override
-	public ResponseEntity<BaseResponse> getNewsFeed(String userId) {
+	public ResponseEntity<NewsFeedResponse> getNewsFeed(String userId) {
 		logger.info("inside getNewsFeed method with userId {}",userId);			
 			NewsFeedResponse newsFeedResponse= new NewsFeedResponse();
 			try {	 	
 				 	newsFeedResponse.setUserData(socialMediaRepoImpl.getPostDetailsOfUser(userId).entrySet()
 			                .stream()
+			                .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
 			                .limit(20)
-			                .sorted(Map.Entry.comparingByKey())
 			                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
+				 	newsFeedResponse.setNumbrOfPosts(newsFeedResponse.getUserData().size());
 					setSuccessResponse(newsFeedResponse, "Top 20 Post retrieved successfully");
 
 			} catch (UserDetailsNotFoundException e) {

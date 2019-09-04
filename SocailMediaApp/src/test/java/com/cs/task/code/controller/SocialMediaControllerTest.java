@@ -6,10 +6,13 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,6 +28,7 @@ import com.cs.task.code.request.CreatePostRequest;
 import com.cs.task.code.response.BaseResponse;
 import com.cs.task.code.response.FolloweeResponse;
 import com.cs.task.code.response.NewsFeedResponse;
+import com.cs.task.code.service.SocialMediaServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,16 +37,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * implements the social media controller Tests
  *
  */
-@WebMvcTest(value=SocialMediaControllerImpl.class)
+@SpringBootTest
 @RunWith(SpringRunner.class)
 public class SocialMediaControllerTest  {
-		
-	@MockBean
-	SocialMediaControllerImpl socialMediaServiceImpl;
-
 	
-	@Autowired
-	private MockMvc mockMvc;
+	
+		
+	@InjectMocks
+	SocialMediaControllerImpl socialMediaControllerImpl;
+	
+	@Mock
+	SocialMediaServiceImpl socialMediaServiceImpl;
 	
 	CreatePostRequest request;
 	
@@ -52,7 +57,10 @@ public class SocialMediaControllerTest  {
 	
 	FolloweeResponse followeeResponse;
 	
-	String requestJson;
+	
+	ResponseEntity<BaseResponse> baseResp;
+	
+	ResponseEntity<NewsFeedResponse> newsFeedResp;
 		
 	@Before
 	public void setUp() throws Exception{
@@ -62,74 +70,33 @@ public class SocialMediaControllerTest  {
 		request.setUserId("sd212");
 		request.setPostId("ps123");
 		request.setContent("Hi Tis is conent");
-		requestJson=this.mapToJson(request);
 		
-		response =new BaseResponse();
-		response.setResponseStatus(HttpStatus.OK);
-		
-		newsFeedResponse=new NewsFeedResponse();
-		newsFeedResponse.setResponseStatus(HttpStatus.OK);
-		
-		followeeResponse= new FolloweeResponse();
-		response.setResponseStatus(HttpStatus.OK);
 	}
 	
 	
 	  @Test
 	  public void createPostTest() throws Exception{
-			when(socialMediaServiceImpl.createPost(request)).thenReturn(ResponseEntity.status(HttpStatus.OK).body(response));
-			
-			RequestBuilder requestBuilder = MockMvcRequestBuilders
-					.post("/socialMedia/create/createPost")
-					.accept(MediaType.APPLICATION_JSON_VALUE).content(requestJson)
-					.contentType(MediaType.APPLICATION_JSON_VALUE);
-			MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-			MockHttpServletResponse response = result.getResponse();
-			assertEquals(HttpStatus.OK.value(), response.getStatus());
+			when(socialMediaControllerImpl.createPost(request)).thenReturn(baseResp);
+			assertEquals(socialMediaServiceImpl.createPost(request), baseResp);
 	  }
 
 	@Test
 	public void getNewsFeedTest() throws Exception {
-		when(socialMediaServiceImpl.getNewsFeed(Mockito.anyString())).thenReturn(ResponseEntity.status(HttpStatus.OK).body(newsFeedResponse));
-		String URI="/socialMedia/get/getNewsFeed/saur";
-		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get(URI)
-				.contentType(MediaType.APPLICATION_JSON_VALUE);
-		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		when(socialMediaControllerImpl.getNewsFeed("randomId")).thenReturn(newsFeedResp);
+		assertEquals(socialMediaServiceImpl.getNewsFeed("randomId"), newsFeedResp);
+		
 	}
 	
 	@Test
 	public void followTest() throws Exception {
-		when(socialMediaServiceImpl.follow(Mockito.anyString(),Mockito.anyString())).thenReturn(ResponseEntity.status(HttpStatus.OK).body(response));
-		String URI="/socialMedia/follow?followerId=saur102&followeeId=cs101";
-		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get(URI)
-				.contentType(MediaType.APPLICATION_JSON_VALUE);
-		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		
-		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		
+		when(socialMediaControllerImpl.unFollow("auto1", "auto2")).thenReturn(baseResp);
+		assertEquals(socialMediaServiceImpl.unFollow("auto1", "auto2"), baseResp);		
 	}
 	
 	@Test
 	public void unFollowTest() throws Exception {
-		when(socialMediaServiceImpl.unFollow(Mockito.anyString(),Mockito.anyString())).thenReturn(ResponseEntity.status(HttpStatus.OK).body(response));
-		String URI="/socialMedia/unFollow?followerId=saur102&followeeId=cs101";
-		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get(URI)
-				.contentType(MediaType.APPLICATION_JSON_VALUE);
-		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		
-		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		
+		when(socialMediaControllerImpl.follow("auto1", "auto2")).thenReturn(baseResp);
+		assertEquals(socialMediaServiceImpl.follow("auto1", "auto2"), baseResp);		
 	}
-	
-	private String mapToJson(Object object) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper.writeValueAsString(object);
-	}
+
 }

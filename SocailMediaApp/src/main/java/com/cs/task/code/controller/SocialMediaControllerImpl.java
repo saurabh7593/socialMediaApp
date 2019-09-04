@@ -49,7 +49,7 @@ public class SocialMediaControllerImpl implements SocialMediaController {
 
 	@Override
 	@RequestMapping(value="/get/getNewsFeed/{userId}",method= {RequestMethod.GET},produces=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<BaseResponse> getNewsFeed(@PathVariable(name="userId", required=true) @NotNull String userId) {
+	public ResponseEntity<NewsFeedResponse> getNewsFeed(@PathVariable(name="userId", required=true) @NotNull String userId) {
 		logger.info("inside getNewsFeed method with userId {}",userId);		
 		return  socialMediaServiceImpl.getNewsFeed(userId);
 	}
